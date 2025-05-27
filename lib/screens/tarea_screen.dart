@@ -69,17 +69,22 @@ class _TaskScreenState extends State<TaskScreen>
           children: [
             const Header(),
             Expanded(
+              //previene que las animaciones se repitan
               child: AnimationLimiter(
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: _tasks.length,
                   itemBuilder: (context, index) {
                     final task = _tasks[index];
+                    //Define el retardo y posicion
                     return AnimationConfiguration.staggeredList(
                       position: index,
                       duration: const Duration(milliseconds: 400),
+                      //Hace que las tareas
+                      //entren deslizandose desde abajo
                       child: SlideAnimation(
                         verticalOffset: 50.0,
+                        //Hace un efecto de desvanecimiento
                         child: FadeInAnimation(
                           child: TaskCard(
                             title: task['title'],
@@ -100,12 +105,12 @@ class _TaskScreenState extends State<TaskScreen>
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTaskSheet,
-        backgroundColor: Colors.deepPurple,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        backgroundColor: const Color.fromARGB(255, 78, 49, 164),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        //Necesita de un animationController
         child: AnimatedIcon(
-          icon: AnimatedIcons.add_event,
+          //Se cambio el icono de add por arrow_menu para tener un estilo diferente
+          icon: AnimatedIcons.arrow_menu,
           progress: _iconController,
         ),
       ),

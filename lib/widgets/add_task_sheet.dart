@@ -32,7 +32,10 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Agregar nueva tarea', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            'Agregar nueva tarea',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 12),
           TextField(
             controller: _controller,
@@ -46,7 +49,9 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
           const SizedBox(height: 12),
           ElevatedButton.icon(
             onPressed: _submit,
-            icon: const Icon(Icons.check),
+            //Se cambio el icono de check por el de edit_note
+            // para que se vea mas acorde a la accion de agregar una tarea
+            icon: const Icon(Icons.edit_note),
             label: const Text('Agregar tarea'),
           ),
         ],
