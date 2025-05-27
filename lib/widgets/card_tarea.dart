@@ -49,7 +49,7 @@ class TaskCard extends StatelessWidget {
                 return Transform.rotate(
                   //Se multiplico por 2 * pi para que se haga la
                   //rotacion completa porque se ve mejor
-                  angle: isDone ? iconRotation.value * 2 * pi : 0,
+                  angle: isDone ? iconRotation.value * pi : 0,
                   child: Icon(
                     isDone ? Icons.check_circle : Icons.radio_button_unchecked,
                     color: isDone ? Colors.green : Colors.grey,
