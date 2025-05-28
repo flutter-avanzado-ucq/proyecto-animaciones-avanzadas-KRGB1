@@ -1,4 +1,6 @@
-// main.dart
+// Usuario KRGB1
+//Repositorio: https://github.com/flutter-avanzado-ucq/proyecto-animaciones-avanzadas-KRGB1.git
+//Fecha de entrega: 28/Mayo/2025
 import 'package:flutter/material.dart';
 import 'screens/tarea_screen.dart';
 import 'tema/tema_app.dart';
