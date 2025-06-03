@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class TaskCard extends StatelessWidget {
   final String title;
@@ -7,6 +8,7 @@ class TaskCard extends StatelessWidget {
   final VoidCallback onToggle;
   final VoidCallback onDelete;
   final Animation<double> iconRotation;
+  final DateTime? vencimiento; // Agregado para la fecha de vencimiento
 
   const TaskCard({
     super.key,
@@ -15,6 +17,7 @@ class TaskCard extends StatelessWidget {
     required this.onToggle,
     required this.onDelete,
     required this.iconRotation,
+    required this.vencimiento, // Agregado para la fecha de vencimiento
   });
 
   @override
@@ -76,12 +79,26 @@ class TaskCard extends StatelessWidget {
                 },
               ),
             ),
-            title: Text(
-              title,
-              style: TextStyle(
-                decoration: isDone ? TextDecoration.lineThrough : null,
-                color: isDone ? Colors.black54 : Colors.black87,
-              ),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    decoration: isDone ? TextDecoration.lineThrough : null,
+                    color: isDone ? Colors.black54 : Colors.black87,
+                  ),
+                ),
+
+                // Muestra la fecha de vencimiento si está presente
+                if (vencimiento != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Vence: ${DateFormat('dd/MM/yyyy').format(vencimiento!)}',
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                ],
+              ],
             ),
             trailing: IconButton(
               icon: const Icon(Icons.delete, color: Colors.redAccent),
