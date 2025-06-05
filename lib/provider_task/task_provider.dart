@@ -29,4 +29,16 @@ class TaskProvider with ChangeNotifier {
     _tasks.removeAt(index);
     notifyListeners();
   }
+
+  // Nueva función para editar la tarea
+  void editTask(int index, {String? newTitle, DateTime? newFecha}) {
+    if (index < 0 || index >= _tasks.length) return;
+    if (newTitle != null) {
+      _tasks[index].title = newTitle;
+    }
+    if (newFecha != null) {
+      _tasks[index].vencimiento = newFecha;
+    }
+    notifyListeners();
+  }
 }

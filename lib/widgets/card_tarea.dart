@@ -8,7 +8,8 @@ class TaskCard extends StatelessWidget {
   final VoidCallback onToggle;
   final VoidCallback onDelete;
   final Animation<double> iconRotation;
-  final DateTime? vencimiento; // Agregado para la fecha de vencimiento
+  final DateTime? vencimiento;
+  final VoidCallback onEdit; // Agregado para la fecha de vencimiento
 
   const TaskCard({
     super.key,
@@ -18,6 +19,7 @@ class TaskCard extends StatelessWidget {
     required this.onDelete,
     required this.iconRotation,
     required this.vencimiento, // Agregado para la fecha de vencimiento
+    required this.onEdit,
   });
 
   @override
@@ -100,9 +102,20 @@ class TaskCard extends StatelessWidget {
                 ],
               ],
             ),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete, color: Colors.redAccent),
-              onPressed: onDelete,
+            trailing:
+            // Boton de editar con icono verde
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.green),
+                  onPressed: onEdit,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                  onPressed: onDelete,
+                ),
+              ],
             ),
           ),
         ),

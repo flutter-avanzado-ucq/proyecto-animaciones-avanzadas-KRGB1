@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:tareas/widgets/edit_task_sheet.dart';
 //import '../widgets/card_tarea.dart';
 import '../widgets/card_tarea.dart';
 import '../widgets/header.dart';
@@ -65,7 +66,7 @@ class _TaskScreenState extends State<TaskScreen>
   // }
 
   void _showAddTaskSheet() {
-    vencimiento = null; // Reinicia la fecha de vencimiento al agregar una tarea
+    vencimiento = null;
     String taskTitle = '';
     showModalBottomSheet(
       context: context,
@@ -216,6 +217,14 @@ class _TaskScreenState extends State<TaskScreen>
                               //onDelete: () => _removeTask(index),
                               onDelete: () => taskProvider.removeTask(index),
                               iconRotation: _iconController,
+                              onEdit: () {
+                                // Muestra el modal para editar la tarea
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  builder: (_) => EditTaskSheet(index: index),
+                                );
+                              },
                             ),
                           ),
                         ),
