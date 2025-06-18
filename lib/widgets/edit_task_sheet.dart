@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provider_task/task_provider.dart';
+import '../services/notification_service.dart';
 
 class EditTaskSheet extends StatefulWidget {
   final int index;
@@ -21,16 +22,35 @@ class _EditTaskSheetState extends State<EditTaskSheet> {
     final task =
         Provider.of<TaskProvider>(context, listen: false).tasks[widget.index];
     _controller = TextEditingController(text: task.title);
-    _selectedDate = task.vencimiento;
+    _selectedDate = task.dueDate;
   }
 
-  void _submit() {
+  void _submit() async {
     final newTitle = _controller.text.trim();
     if (newTitle.isNotEmpty) {
       Provider.of<TaskProvider>(
         context,
         listen: false,
-      ).editTask(widget.index, newTitle: newTitle, newFecha: _selectedDate);
+      ).updateTask(widget.index, newTitle, newDate: _selectedDate);
+
+      // Notificación inmediata al editar tarea
+      await NotificationService.showImmediateNotification(
+        title: 'Tarea actualizada',
+        body: 'Has actualizado la tarea: $newTitle',
+        payload: 'Tarea actualizada: $newTitle',
+      );
+
+      // Notificación programada si se establece o cambia la fecha
+      if (_selectedDate != null) {
+        await NotificationService.scheduleNotification(
+          title: 'Recordatorio de tarea actualizada',
+          body: 'No olvides: $newTitle',
+          scheduledDate: _selectedDate!,
+          payload:
+              'Tarea actualizada: $newTitle para ${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+        );
+      }
+
       Navigator.pop(context);
     }
   }

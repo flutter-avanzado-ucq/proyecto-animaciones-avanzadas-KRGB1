@@ -7,7 +7,20 @@ import 'tema/tema_app.dart';
 import 'package:provider/provider.dart';
 import 'provider_task/task_provider.dart';
 
-void main() {
+// 🔔 Importar el servicio de notificaciones
+import 'services/notification_service.dart';
+
+void main() async {
+  // Asegura que Flutter esté inicializado
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializar notificaciones
+  await NotificationService.initializeNotifications();
+
+  // Pedir permiso para notificaciones (Android 13+ y iOS)
+  await NotificationService.requestPermissions();
+
+  // Iniciar la app
   runApp(
     ChangeNotifierProvider(create: (_) => TaskProvider(), child: const MyApp()),
   );
