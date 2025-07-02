@@ -9,7 +9,8 @@ class TaskCard extends StatelessWidget {
   final VoidCallback onDelete;
   final Animation<double> iconRotation;
   final DateTime? vencimiento;
-  final VoidCallback onEdit; // Agregado para la fecha de vencimiento
+  final VoidCallback onEdit;
+  final DateTime? dueDate;
 
   const TaskCard({
     super.key,
@@ -20,6 +21,8 @@ class TaskCard extends StatelessWidget {
     required this.iconRotation,
     required this.vencimiento, // Agregado para la fecha de vencimiento
     required this.onEdit,
+    required this.dueDate,
+    required int index,
   });
 
   @override

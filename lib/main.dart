@@ -1,18 +1,31 @@
-// Usuario KRGB1
-//Repositorio: https://github.com/flutter-avanzado-ucq/proyecto-animaciones-avanzadas-KRGB1.git
-//Fecha de entrega: 02/Junio/2025
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+// Integración Hive: importación de Hive Flutter
+
 import 'screens/tarea_screen.dart';
 import 'tema/tema_app.dart';
 import 'package:provider/provider.dart';
 import 'provider_task/task_provider.dart';
+import 'provider_task/theme_provider.dart'; // NUEVO
 
-// 🔔 Importar el servicio de notificaciones
+// Importar modelo para Hive
+import 'model/task_model.dart' as task_model;
+
+// Importar el servicio de notificaciones
 import 'services/notification_service.dart';
 
 void main() async {
   // Asegura que Flutter esté inicializado
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Integración Hive: inicialización de Hive
+  await Hive.initFlutter();
+
+  // Integración Hive: registro del adapter para Task
+  Hive.registerAdapter(task_model.TaskAdapter());
+
+  // Integración Hive: apertura de la caja tasksBox
+  await Hive.openBox<task_model.Task>('tasksBox');
 
   // Inicializar notificaciones
   await NotificationService.initializeNotifications();
@@ -22,8 +35,18 @@ void main() async {
 
   // Iniciar la app
   runApp(
-    ChangeNotifierProvider(create: (_) => TaskProvider(), child: const MyApp()),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => TaskProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()), // ✅ NUEVO
+      ],
+      child: const MyApp(),
+    ),
   );
+}
+
+extension on HiveInterface {
+  initFlutter() {}
 }
 
 class MyApp extends StatelessWidget {
@@ -31,11 +54,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Tareas Pro',
-      theme: AppTheme.theme,
-      home: const TaskScreen(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Tareas Pro',
+          theme: AppTheme.theme,
+          darkTheme: ThemeData.dark(),
+          themeMode:
+              themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          home: const TaskScreen(),
+        );
+      },
     );
   }
 }

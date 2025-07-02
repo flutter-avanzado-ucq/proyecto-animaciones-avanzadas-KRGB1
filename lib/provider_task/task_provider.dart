@@ -3,10 +3,14 @@ import 'package:flutter/material.dart';
 class Task {
   String title;
   bool done;
-  DateTime? vencimiento; // Agrega la funcion de fecha de vencimiento
+  DateTime? vencimiento;
+  dynamic key;
+
+  // Agrega una clave para identificar la tarea
+  // Agrega la funcion de fecha de vencimiento
 
   //practica se agrega parametro de fecha
-  Task({required this.title, this.done = false, this.vencimiento});
+  Task({required this.title, this.done = false, this.vencimiento, this.key});
 
   DateTime? get dueDate => vencimiento;
   set dueDate(DateTime? date) => vencimiento = date;
