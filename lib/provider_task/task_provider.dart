@@ -5,6 +5,7 @@ class Task {
   bool done;
   DateTime? vencimiento;
   dynamic key;
+  int? notificationId;
 
   // Agrega una clave para identificar la tarea
   // Agrega la funcion de fecha de vencimiento
@@ -20,7 +21,12 @@ class Task {
 class TaskProvider extends ChangeNotifier {
   List<Task> tasks = [];
 
-  void addTask(String title, DateTime? fecha, {DateTime? dueDate}) {
+  void addTask(
+    String title,
+    DateTime? fecha, {
+    DateTime? dueDate,
+    int? notificationId,
+  }) {
     tasks.insert(0, Task(title: title, done: false, vencimiento: fecha));
     notifyListeners();
   }
@@ -47,7 +53,12 @@ class TaskProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateTask(int index, String newTitle, {DateTime? newDate}) {
+  void updateTask(
+    int index,
+    String newTitle, {
+    DateTime? newDate,
+    int? notificationId,
+  }) {
     if (index >= 0 && index < tasks.length) {
       tasks[index].title = newTitle;
       if (newDate != null) {

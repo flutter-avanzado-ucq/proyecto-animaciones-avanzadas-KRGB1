@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 // Integración Hive: importación de Hive Flutter
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'screens/tarea_screen.dart';
 import 'tema/tema_app.dart';
@@ -13,6 +13,10 @@ import 'model/task_model.dart' as task_model;
 
 // Importar el servicio de notificaciones
 import 'services/notification_service.dart';
+
+// NUEVO: Importar AppLocalizations generado
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   // Asegura que Flutter esté inicializado
@@ -45,10 +49,6 @@ void main() async {
   );
 }
 
-extension on HiveInterface {
-  initFlutter() {}
-}
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -58,11 +58,25 @@ class MyApp extends StatelessWidget {
       builder: (context, themeProvider, _) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'Tareas Pro',
+          title:
+              AppLocalizations.of(context)!.appTitle, // <-- internacionalizado
           theme: AppTheme.theme,
           darkTheme: ThemeData.dark(),
           themeMode:
               themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+
+          // NUEVO: Configuración de internacionalización
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en'), // Inglés
+            Locale('es'), // Español
+          ],
+
           home: const TaskScreen(),
         );
       },

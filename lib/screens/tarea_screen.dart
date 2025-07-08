@@ -5,7 +5,10 @@ import '../widgets/card_tarea.dart';
 import '../widgets/header.dart';
 import '../widgets/add_task_sheet.dart';
 import '../provider_task/task_provider.dart';
-import '../provider_task/theme_provider.dart'; // ✅ Nuevo import
+import '../provider_task/theme_provider.dart'; // Nuevo import
+
+// Importar AppLocalizations generado
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TaskScreen extends StatefulWidget {
   const TaskScreen({super.key});
@@ -47,19 +50,23 @@ class _TaskScreenState extends State<TaskScreen>
   @override
   Widget build(BuildContext context) {
     final taskProvider = context.watch<TaskProvider>();
+    final localizations =
+        AppLocalizations.of(context)!; // Obtener localización actual
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tareas Pro'),
+        // Usar traducción en el título
+        title: Text(localizations.appTitle),
         actions: [
-          // ✅ IconButton para cambiar tema claro/oscuro
+          // IconButton para cambiar tema claro/oscuro
           Consumer<ThemeProvider>(
             builder: (context, themeProvider, child) {
               return IconButton(
                 icon: Icon(
                   themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
                 ),
-                tooltip: 'Cambiar tema',
+                // Usar traducción en el tooltip
+                tooltip: localizations.changeTheme,
                 onPressed: () {
                   themeProvider.toggleTheme();
                 },
@@ -115,8 +122,6 @@ class _TaskScreenState extends State<TaskScreen>
                               title: task.title,
                               isDone: task.done,
                               dueDate: task.dueDate,
-                              vencimiento:
-                                  task.vencimiento, // Agregado para la fecha de vencimiento
                               onToggle: () {
                                 taskProvider.toggleTask(index);
                                 _iconController.forward(from: 0);
@@ -124,7 +129,6 @@ class _TaskScreenState extends State<TaskScreen>
                               onDelete: () => taskProvider.removeTask(index),
                               iconRotation: _iconController,
                               index: index,
-                              onEdit: () {},
                             ),
                           ),
                         ),

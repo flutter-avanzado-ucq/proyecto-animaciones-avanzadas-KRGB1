@@ -73,6 +73,7 @@ class NotificationService {
     required String body,
     required DateTime scheduledDate,
     String? payload,
+    required int notificationId,
   }) async {
     const androidDetails = AndroidNotificationDetails(
       'scheduled_channel',
@@ -95,5 +96,9 @@ class NotificationService {
               .exactAllowWhileIdle, // <-- Added this required argument
       payload: payload,
     );
+  }
+
+  static Future<void> cancelNotification(int notificationId) async {
+    await _notificationsPlugin.cancel(notificationId);
   }
 }

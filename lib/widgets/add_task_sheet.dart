@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import '../provider_task/task_provider.dart';
 import '../services/notification_service.dart';
 
+// Importar AppLocalizations generado
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 class AddTaskSheet extends StatefulWidget {
   const AddTaskSheet({super.key});
 
@@ -11,44 +14,63 @@ class AddTaskSheet extends StatefulWidget {
 }
 
 class _AddTaskSheetState extends State<AddTaskSheet> {
-  final _controller = TextEditingController(); // Controla el input del usuario.
-  DateTime? _selectedDate; // Fecha seleccionada para vencimiento.
+  final _controller = TextEditingController();
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
 
   @override
   void dispose() {
-    _controller.dispose(); // Libera recursos del controlador de texto.
+    _controller.dispose();
     super.dispose();
   }
 
   void _submit() async {
-    final text = _controller.text.trim(); // Elimina espacios en blanco.
+    final text = _controller.text.trim();
+    final localizations =
+        AppLocalizations.of(context)!; // Asegúrate de tener esto disponible
     if (text.isNotEmpty) {
-      // 1. Agrega la tarea al proveedor de estado.
-      Provider.of<TaskProvider>(
-        context,
-        listen: false,
-      ).addTask(text, _selectedDate);
+      int? notificationId;
+      DateTime? finalDueDate;
 
-      // 2. Envia una notificación inmediata informando que se agregó la tarea.
+      // Notificación inmediata al agregar
       await NotificationService.showImmediateNotification(
-        title: 'Nueva tarea',
-        body: 'Has agregado la tarea: $text',
-        payload:
-            'Tarea: $text', // Este texto será accesible si se toca la notificación.
+        title: localizations.newTask,
+        body: localizations.taskAdded(text),
+        payload: localizations.taskPayload(text),
       );
 
-      // 3. Si el usuario seleccionó una fecha, programa una notificación futura.
-      if (_selectedDate != null) {
+      if (_selectedDate != null && _selectedTime != null) {
+        finalDueDate = DateTime(
+          _selectedDate!.year,
+          _selectedDate!.month,
+          _selectedDate!.day,
+          _selectedTime!.hour,
+          _selectedTime!.minute,
+        );
+
+        notificationId = DateTime.now().millisecondsSinceEpoch.remainder(
+          100000,
+        );
+
         await NotificationService.scheduleNotification(
-          title: 'Recordatorio de tarea',
-          body: 'No olvides: $text',
-          scheduledDate: _selectedDate!,
-          payload:
-              'Tarea programada: $text para ${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+          title: localizations.taskReminder,
+          body: localizations.doNotForget(text),
+          scheduledDate: finalDueDate,
+          payload: localizations.scheduledTaskPayload(
+            text,
+            finalDueDate.toString(),
+          ),
+          notificationId: notificationId,
         );
       }
 
-      Navigator.pop(context); // Cierra la hoja inferior.
+      Provider.of<TaskProvider>(context, listen: false).addTask(
+        text,
+        finalDueDate ?? _selectedDate,
+        notificationId: notificationId,
+      );
+
+      Navigator.pop(context);
     }
   }
 
@@ -62,13 +84,27 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
     );
     if (picked != null) {
       setState(() {
-        _selectedDate = picked; // Guarda la fecha seleccionada.
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedTime = picked;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom + 20,
@@ -79,17 +115,17 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Agregar nueva tarea',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Text(
+            localizations.addNewTask,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _controller,
             autofocus: true,
-            decoration: const InputDecoration(
-              labelText: 'Descripción',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: localizations.description,
+              border: const OutlineInputBorder(),
             ),
             onSubmitted: (_) => _submit(),
           ),
@@ -98,7 +134,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
             children: [
               ElevatedButton(
                 onPressed: _pickDate,
-                child: const Text('Seleccionar fecha'),
+                child: Text(localizations.selectDate),
               ),
               const SizedBox(width: 10),
               if (_selectedDate != null)
@@ -108,10 +144,25 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
             ],
           ),
           const SizedBox(height: 12),
+          Row(
+            children: [
+              ElevatedButton(
+                onPressed: _pickTime,
+                child: Text(localizations.selectTime),
+              ),
+              const SizedBox(width: 10),
+              Text(localizations.timeLabel),
+              if (_selectedTime != null)
+                Text(
+                  '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
           ElevatedButton.icon(
             onPressed: _submit,
             icon: const Icon(Icons.check),
-            label: const Text('Agregar tarea'),
+            label: Text(localizations.addTask),
           ),
         ],
       ),

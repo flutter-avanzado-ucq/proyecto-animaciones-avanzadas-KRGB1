@@ -14,7 +14,7 @@ class Task {
   final DateTime dueDate;
 
   @HiveField(3)
-  int? notificationId;
+  final int? notificationId;
 
   Task({
     required this.title,

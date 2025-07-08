@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import '../provider_task/task_provider.dart';
 import '../services/notification_service.dart';
 
+// Importar AppLocalizations generado
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 class EditTaskSheet extends StatefulWidget {
   final int index;
 
@@ -15,6 +18,7 @@ class EditTaskSheet extends StatefulWidget {
 class _EditTaskSheetState extends State<EditTaskSheet> {
   late TextEditingController _controller;
   DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
 
   @override
   void initState() {
@@ -22,36 +26,69 @@ class _EditTaskSheetState extends State<EditTaskSheet> {
     final task =
         Provider.of<TaskProvider>(context, listen: false).tasks[widget.index];
     _controller = TextEditingController(text: task.title);
-    _selectedDate = task.dueDate;
+    _selectedDate =
+        task.dueDate; // practica: se carga la FECHA y HORA actuales de la notificación
+
+    if (task.dueDate != null) {
+      _selectedTime = TimeOfDay.fromDateTime(task.dueDate!);
+    } else {
+      _selectedTime = const TimeOfDay(hour: 8, minute: 0);
+    }
   }
 
   void _submit() async {
     final newTitle = _controller.text.trim();
+    final localizations = AppLocalizations.of(context)!;
     if (newTitle.isNotEmpty) {
-      Provider.of<TaskProvider>(
-        context,
-        listen: false,
-      ).updateTask(widget.index, newTitle, newDate: _selectedDate);
+      int? notificationId;
+      DateTime? finalDueDate;
 
-      // Notificación inmediata al editar tarea
+      final task =
+          Provider.of<TaskProvider>(context, listen: false).tasks[widget.index];
+
+      if (task.notificationId != null) {
+        await NotificationService.cancelNotification(task.notificationId!);
+      }
+
       await NotificationService.showImmediateNotification(
-        title: 'Tarea actualizada',
-        body: 'Has actualizado la tarea: $newTitle',
-        payload: 'Tarea actualizada: $newTitle',
+        title: localizations.taskUpdated,
+        body: localizations.taskUpdatedMsg(newTitle),
+        payload: localizations.updatedTaskPayload(newTitle),
       );
+      if (!mounted) return;
+      Navigator.pop(context);
 
-      // Notificación programada si se establece o cambia la fecha
-      if (_selectedDate != null) {
+      if (_selectedDate != null && _selectedTime != null) {
+        finalDueDate = DateTime(
+          _selectedDate!.year,
+          _selectedDate!.month,
+          _selectedDate!.day,
+          _selectedTime!.hour,
+          _selectedTime!.minute,
+        );
+
+        notificationId = DateTime.now().millisecondsSinceEpoch.remainder(
+          100000,
+        );
+
         await NotificationService.scheduleNotification(
-          title: 'Recordatorio de tarea actualizada',
-          body: 'No olvides: $newTitle',
-          scheduledDate: _selectedDate!,
-          payload:
-              'Tarea actualizada: $newTitle para ${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+          title: localizations.updatedTaskReminder,
+          body: localizations.doNotForget(newTitle),
+          scheduledDate: finalDueDate,
+          payload: localizations.updatedTaskPayloadWithDate(
+            newTitle,
+            finalDueDate.toString(),
+          ),
+          notificationId: notificationId,
         );
       }
 
-      Navigator.pop(context);
+      Provider.of<TaskProvider>(context, listen: false).updateTask(
+        widget.index,
+        newTitle,
+        newDate: finalDueDate ?? _selectedDate,
+        notificationId: notificationId,
+      );
     }
   }
 
@@ -70,8 +107,22 @@ class _EditTaskSheetState extends State<EditTaskSheet> {
     }
   }
 
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime ?? TimeOfDay.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedTime = picked;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom + 20,
@@ -82,17 +133,17 @@ class _EditTaskSheetState extends State<EditTaskSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Editar tarea',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Text(
+            localizations.editTaskTitle,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _controller,
             autofocus: true,
-            decoration: const InputDecoration(
-              labelText: 'Título',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: localizations.titleLabel,
+              border: const OutlineInputBorder(),
             ),
             onSubmitted: (_) => _submit(),
           ),
@@ -101,7 +152,7 @@ class _EditTaskSheetState extends State<EditTaskSheet> {
             children: [
               ElevatedButton(
                 onPressed: _pickDate,
-                child: const Text('Cambiar fecha'),
+                child: Text(localizations.changeDate),
               ),
               const SizedBox(width: 10),
               if (_selectedDate != null)
@@ -111,10 +162,25 @@ class _EditTaskSheetState extends State<EditTaskSheet> {
             ],
           ),
           const SizedBox(height: 12),
+          Row(
+            children: [
+              ElevatedButton(
+                onPressed: _pickTime,
+                child: Text(localizations.changeTime),
+              ),
+              const SizedBox(width: 10),
+              Text(localizations.timeLabel),
+              if (_selectedTime != null)
+                Text(
+                  '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
           ElevatedButton.icon(
             onPressed: _submit,
             icon: const Icon(Icons.check),
-            label: const Text('Guardar cambios'),
+            label: Text(localizations.saveChanges),
           ),
         ],
       ),

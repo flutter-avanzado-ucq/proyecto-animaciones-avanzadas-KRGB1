@@ -1,6 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../widgets/edit_task_sheet.dart';
+
+// Importar AppLocalizations generado
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TaskCard extends StatelessWidget {
   final String title;
@@ -8,9 +12,8 @@ class TaskCard extends StatelessWidget {
   final VoidCallback onToggle;
   final VoidCallback onDelete;
   final Animation<double> iconRotation;
-  final DateTime? vencimiento;
-  final VoidCallback onEdit;
   final DateTime? dueDate;
+  final int index;
 
   const TaskCard({
     super.key,
@@ -19,107 +22,105 @@ class TaskCard extends StatelessWidget {
     required this.onToggle,
     required this.onDelete,
     required this.iconRotation,
-    required this.vencimiento, // Agregado para la fecha de vencimiento
-    required this.onEdit,
-    required this.dueDate,
-    required int index,
+    required this.index,
+    this.dueDate,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Dismissible(
-      key: ValueKey(title), // Usa un identificador único para cada tarea
-      direction:
-          DismissDirection
-              .startToEnd, // Permite deslizar la tarjeta hacia a la derecha
-      onDismissed: (direction) {
-        onDelete(); //Elimina la tarea al deslizar
-      },
-      //Se encarga de la visualizacion del fondo al deslizar como la alineacion y el color
-      background: Container(
-        alignment: Alignment.centerLeft,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        //Se agrego un color claro con una opacidad de 0.7 para distinguirlo del boton de eliminar
-        color: const Color.fromARGB(255, 216, 86, 86).withOpacity(0.7),
-        child: const Icon(Icons.delete, color: Colors.white, size: 32),
-      ),
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 400),
-        //Se aumento la opacidad a 0.8 para que la tarjeta tenga mas grosor y enfasis
-        //Se disminuyo los milisegundos para que fuera mas rapida la animacion
-        opacity: isDone ? 0.8 : 1.0,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            //Se cambio el color por un verde mas oscuro para que se distinga mas
-            color: isDone ? const Color.fromARGB(255, 7, 90, 10) : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+    final localizations = AppLocalizations.of(context)!;
+
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 500),
+      opacity: isDone ? 0.4 : 1.0,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 500),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDone ? const Color(0xFFD0F0C0) : const Color(0xFFFFF8E1),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: ListTile(
+          leading: GestureDetector(
+            onTap: onToggle,
+            child: AnimatedBuilder(
+              animation: iconRotation,
+              builder: (context, child) {
+                return Transform.rotate(
+                  angle: iconRotation.value * pi,
+                  child: Icon(
+                    isDone ? Icons.refresh : Icons.radio_button_unchecked,
+                    color: isDone ? Colors.teal : Colors.grey,
+                    size: 30,
+                  ),
+                );
+              },
+            ),
+          ),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  decoration: isDone ? TextDecoration.lineThrough : null,
+                  fontSize: 18,
+                  color: isDone ? Colors.black45 : Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
+              if (dueDate != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      // Integración Hive: la hora y fecha se extraen de dueDate, que es un DateTime completo
+                      // practica: aquí se muestra la FECHA extraída de dueDate (incluye la fecha programada de la notificación)
+                      Text(
+                        '${localizations.dueDate} ${DateFormat('dd/MM/yyyy').format(dueDate!)}',
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      // practica: aquí se muestra la HORA extraída de dueDate (hora programada de la notificación)
+                      Text(
+                        '${localizations.hourLabel} ${DateFormat('HH:mm').format(dueDate!)}',
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
             ],
           ),
-          child: ListTile(
-            leading: GestureDetector(
-              onTap: onToggle,
-              child: AnimatedBuilder(
-                animation: iconRotation,
-                builder: (context, child) {
-                  return Transform.rotate(
-                    //Se multiplico por 2 * pi para que se haga la
-                    //rotacion completa porque se ve mejor
-                    angle: isDone ? iconRotation.value * pi : 0,
-                    child: Icon(
-                      isDone
-                          ? Icons.check_circle
-                          : Icons.radio_button_unchecked,
-                      color: isDone ? Colors.green : Colors.grey,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit, color: Colors.blue),
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                     ),
+                    builder: (_) => EditTaskSheet(index: index),
                   );
                 },
               ),
-            ),
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    decoration: isDone ? TextDecoration.lineThrough : null,
-                    color: isDone ? Colors.black54 : Colors.black87,
-                  ),
-                ),
-
-                // Muestra la fecha de vencimiento si está presente
-                if (vencimiento != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    'Vence: ${DateFormat('dd/MM/yyyy').format(vencimiento!)}',
-                    style: const TextStyle(fontSize: 12, color: Colors.black54),
-                  ),
-                ],
-              ],
-            ),
-            trailing:
-            // Boton de editar con icono verde
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.green),
-                  onPressed: onEdit,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.redAccent),
-                  onPressed: onDelete,
-                ),
-              ],
-            ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                onPressed: onDelete,
+              ),
+            ],
           ),
         ),
       ),

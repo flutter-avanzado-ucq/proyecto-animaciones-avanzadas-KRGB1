@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class Header extends StatelessWidget {
   const Header({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            //Se cambiaron los colores del gradiente porque me gusto mas esta combinacion
-            Color.fromARGB(255, 51, 0, 255),
-            Color.fromARGB(255, 92, 56, 97),
-          ],
+          colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -29,15 +28,16 @@ class Header extends StatelessWidget {
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               Text(
-                'Hola, Kevin 🎯',
-                style: TextStyle(color: Colors.white, fontSize: 18),
+                localizations.greeting,
+                style: const TextStyle(color: Colors.white, fontSize: 18),
               ),
               Text(
-                'Estas son tus tareas para hoy',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
+                localizations.todayTasks,
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
               ),
+              const SizedBox(height: 8), // espacio visual
             ],
           ),
         ],
